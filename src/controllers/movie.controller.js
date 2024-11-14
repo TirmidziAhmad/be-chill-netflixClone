@@ -15,7 +15,7 @@ const movieController = {
 
   async getOneMovie(req, res, next) {
     try {
-      const { id } = req.params;
+      const id = req.user.movieId;
       const result = await db.query("SELECT * FROM movies WHERE id = $1", [id]);
       if (!result.rows[0]) {
         return res.status(404).json({ message: "Movie not found" });
@@ -38,7 +38,7 @@ const movieController = {
 
   async updateMovie(req, res, next) {
     try {
-      const { id } = req.params;
+      const id = req.user.movieId;
       const movie = req.body;
       const result = await db.query("UPDATE movies SET title = $1, description = $2, rating = $3 WHERE id = $4 RETURNING *", [movie.title, movie.description, movie.rating, id]);
       if (!result.rows[0]) {

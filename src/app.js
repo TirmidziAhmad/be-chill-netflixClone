@@ -2,7 +2,7 @@ const express = require("express");
 require("dotenv").config({ path: "./.env" });
 
 //import routes
-const { userRoutes, movieRoutes } = require("./routes/index.routes");
+const { userRoutes, movieRoutes, authRoutes } = require("./routes/index.routes");
 //server
 const app = express();
 const port = process.env.PORT || 3001;
@@ -13,9 +13,10 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/users", userRoutes);
 app.use("/movies", movieRoutes);
+app.use("/auth", authRoutes);
 
 //routes to get any other page
-app.get("*", (req, res) => res.send("404"));
+app.get("*", (req, res) => res.status(404).json({ code: 404, message: "Page not found" }));
 
 app.use((err, req, res, next) => {
   console.error(err.stack);

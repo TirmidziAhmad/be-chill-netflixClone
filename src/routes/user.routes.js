@@ -6,8 +6,8 @@ const authMiddleware = require("../middleware/authMiddleware");
 require("dotenv").config({ path: "../.env" });
 
 routerUser.get("/", userController.getAllUsers);
-routerUser.post("/login", userController.login);
-routerUser.post("/register", userController.register);
+routerUser.get("/:id", userController.getUser);
+routerUser.post("/create", userController.createUser);
 routerUser.patch("/update", authMiddleware, userController.updateUser);
 routerUser.delete("/delete", authMiddleware, userController.deleteUser);
 
