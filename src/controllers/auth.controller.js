@@ -1,7 +1,8 @@
 const db = require("../db/db.config");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-
+const uuid = require("uuid");
+const sendingEmail = require("../service/sendingEmail.service");
 const authController = {
   async login(req, res, next) {
     try {
@@ -66,9 +67,19 @@ const authController = {
       // Hash password
       const saltRounds = 10;
       const hashedPassword = await bcrypt.hash(password, saltRounds);
-
+      //Generate UUID token
+      const userTokenActivation = uuid.v4();
       // Insert new user
-      const result = await db.query('INSERT INTO "user" (username, email, password) VALUES ($1, $2, $3) RETURNING user_id, username, email', [username, email, hashedPassword]);
+      const result = await db.query('INSERT INTO "user" (username, email, password, isverified, token) VALUES ($1, $2, $3, $4, $5) RETURNING user_id, username, email, isverified, token', [
+        username,
+        email,
+        hashedPassword,
+        "false",
+        userTokenActivation,
+      ]);
+
+      // Send verification email
+      await sendingEmail(email, userTokenActivation);
 
       // Generate token
       const token = jwt.sign(
@@ -83,7 +94,22 @@ const authController = {
       res.status(201).json({
         token,
         user: result.rows[0],
+        userTokenActivation,
       });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async verifyEmail(req, res, next) {
+    try {
+      const { token } = req.params;
+      const user = await db.query('SELECT * FROM "user" WHERE token = $1', [token]);
+      if (user.rows.length === 0) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      await db.query('UPDATE "user" SET isverified = $1, token = $2 WHERE token = $3', ["true", "null", token]);
+      res.status(200).json({ message: "Email verified successfully" });
     } catch (error) {
       next(error);
     }

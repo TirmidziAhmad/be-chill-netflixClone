@@ -11,8 +11,8 @@ const port = process.env.PORT || 3001;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use("/users", userRoutes);
-app.use("/movies", movieRoutes);
+app.use("/user", userRoutes);
+app.use("/movie", movieRoutes);
 app.use("/auth", authRoutes);
 
 //routes to get any other page
