@@ -67,6 +67,27 @@ const userController = {
       next(error);
     }
   },
+
+  async uploadImage(req, res, next) {
+    try {
+      const id = req.user.userId;
+      const image = req.file.path;
+
+      if (!image) {
+        return res.status(400).json({ message: "No image uploaded" });
+      }
+
+      const result = await db.query('UPDATE "user" SET photo = $1 WHERE user_id = $2 RETURNING *', [image, id]);
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ message: "Photo not inserted to database" });
+      }
+
+      res.json(result.rows[0]);
+    } catch (error) {
+      next(error);
+    }
+  },
 };
 
 module.exports = userController;

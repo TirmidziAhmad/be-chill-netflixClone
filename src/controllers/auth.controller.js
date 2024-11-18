@@ -6,18 +6,18 @@ const sendingEmail = require("../service/sendingEmail.service");
 const authController = {
   async login(req, res, next) {
     try {
-      const { username, password } = req.body;
+      const { email, password } = req.body;
 
       // Validate input
-      if (!username || !password) {
+      if (!email || !password) {
         return res.status(400).json({ message: "Username and password are required" });
       }
 
       // Find user by username
-      const result = await db.query('SELECT * FROM "user" WHERE username = $1', [username]);
+      const result = await db.query('SELECT * FROM "user" WHERE email = $1', [email]);
 
       if (result.rows.length === 0) {
-        return res.status(404).json({ message: "User not found" });
+        return res.status(404).json({ message: "User not found when loged in" });
       }
 
       // Compare passwords
