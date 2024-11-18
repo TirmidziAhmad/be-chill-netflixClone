@@ -15,12 +15,50 @@ const movieController = {
 
   async getOneMovie(req, res, next) {
     try {
+      const id = req.user.movieId;
+      const result = await db.query("SELECT * FROM movies WHERE id = $1", [id]);
+      if (!result.rows[0]) {
+        return res.status(404).json({ message: "Movie not found" });
+      }
+      res.json(result.rows[0]);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async getOneMovieById(req, res, next) {
+    try {
       const { id } = req.params;
       const result = await db.query("SELECT * FROM movies WHERE id = $1", [id]);
       if (!result.rows[0]) {
         return res.status(404).json({ message: "Movie not found" });
       }
       res.json(result.rows[0]);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async sortMovieByRating(req, res, next) {
+    try {
+      const result = await db.query("SELECT * FROM movies ORDER BY rating DESC");
+      if (result.rows.length === 0) {
+        return res.status(204).json({ message: "No movies found" });
+      }
+      res.json(result.rows);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async searchMovieByTitle(req, res, next) {
+    try {
+      const { title } = req.params;
+      const result = await db.query("SELECT * FROM movies WHERE title ILIKE $1", [`%${title}%`]);
+      if (result.rows.length === 0) {
+        return res.status(204).json({ message: "No movies found" });
+      }
+      res.json(result.rows);
     } catch (error) {
       next(error);
     }
@@ -38,7 +76,7 @@ const movieController = {
 
   async updateMovie(req, res, next) {
     try {
-      const { id } = req.params;
+      const id = req.user.movieId;
       const movie = req.body;
       const result = await db.query("UPDATE movies SET title = $1, description = $2, rating = $3 WHERE id = $4 RETURNING *", [movie.title, movie.description, movie.rating, id]);
       if (!result.rows[0]) {
